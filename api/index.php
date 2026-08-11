@@ -1,24 +1,26 @@
 <?php
+session_start();
+
 require __DIR__ . '/../vendor/autoload.php';
 
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
-const DAILY_LIMIT = 20;
-$barcodeImage     = '';
-$barcode          = '';
-$displayText      = '';
-$size             = '';
-$color            = '';
-$error            = '';
-$remaining        = DAILY_LIMIT;
+const DAILY_LIMIT  = 20;
+$barcodeImage      = '';
+$barcode           = '';
+$displayText       = '';
+$size              = '';
+$color             = '';
+$error             = '';
+$remaining         = DAILY_LIMIT;
 
 $today = date('Y-m-d');
 
-//Read today's usage from cookie
+// Read today's usage from cookie
 $usage = 0;
 
-if (!empty($_COOKIE['session_meta'])) {
-    $parts = explode('|', $_COOKIE['session_meta']);
+if (!empty($_COOKIE['barcode_usage'])) {
+    $parts = explode('|', $_COOKIE['barcode_usage']);
 
     if (count($parts) === 2 && $parts[0] === $today) {
         $usage = max(0, (int) $parts[1]);
@@ -35,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $color       = trim($_POST['color'] ?? '');
 
     // Check daily limit
-
     if ($usage >= DAILY_LIMIT) {
         $error = "You have reached your daily limit of " . DAILY_LIMIT . " barcode prints.";
     } elseif ($barcode === '') {
@@ -48,14 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $g->getBarcode($barcode, $g::TYPE_CODE_128, 2, 50)
         );
 
-        //Count successful barcode generation
+        // Count successful barcode generation
         $usage++;
 
         $remaining = max(0, DAILY_LIMIT - $usage);
 
         // Store today's usage in cookie. Cookie expires at midnight.
         setcookie(
-            'session_meta',
+            'barcode_usage',
             $today . '|' . $usage,
             [
                 'expires'  => strtotime('tomorrow'),
@@ -65,7 +66,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'samesite' => 'Lax',
             ]
         );
+
+        // Store generated barcode in session
+        $_SESSION['barcode'] = [
+            'barcodeImage' => $barcodeImage,
+            'barcode'      => $barcode,
+            'displayText'  => $displayText,
+            'size'         => $size,
+            'color'        => $color,
+        ];
+
+        // Redirect to prevent form resubmission on refresh
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
     }
+}
+
+// Get generated barcode from session
+if (!empty($_SESSION['barcode'])) {
+    $barcodeImage = $_SESSION['barcode']['barcodeImage'];
+    $barcode      = $_SESSION['barcode']['barcode'];
+    $displayText  = $_SESSION['barcode']['displayText'];
+    $size         = $_SESSION['barcode']['size'];
+    $color        = $_SESSION['barcode']['color'];
 }
 ?>
 
@@ -99,7 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="text" name="barcode" value="<?= htmlspecialchars($barcode) ?>" minlength="3" maxlength="10" required autofocus>
                 </div>
 
-
                 <div class="row">
                     <label>Display Text</label>
                     <input type="text" name="display_text" value="<?= htmlspecialchars($displayText) ?>" maxlength="10">
@@ -126,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <img src="data:image/png;base64,<?= $barcodeImage ?>" alt="Barcode">
                     <div class="middle"><?= htmlspecialchars($displayText) ?></div>
                     <div class="bottom">
-                        <span> <?= htmlspecialchars($size) ?></span>
+                        <span><?= htmlspecialchars($size) ?></span>
                         <span><?= htmlspecialchars($color) ?></span>
                     </div>
                 </div>
