@@ -3,22 +3,22 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
-const DAILY_LIMIT  = 20;
-$barcodeImage = '';
-$barcode      = '';
-$displayText  = '';
-$size         = '';
-$color        = '';
-$error        = '';
-$remaining    = DAILY_LIMIT;
+const DAILY_LIMIT = 20;
+$barcodeImage     = '';
+$barcode          = '';
+$displayText      = '';
+$size             = '';
+$color            = '';
+$error            = '';
+$remaining        = DAILY_LIMIT;
 
 $today = date('Y-m-d');
 
 //Read today's usage from cookie
 $usage = 0;
 
-if (!empty($_COOKIE['barcode_usage'])) {
-    $parts = explode('|', $_COOKIE['barcode_usage']);
+if (!empty($_COOKIE['session_meta'])) {
+    $parts = explode('|', $_COOKIE['session_meta']);
 
     if (count($parts) === 2 && $parts[0] === $today) {
         $usage = max(0, (int) $parts[1]);
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Store today's usage in cookie. Cookie expires at midnight.
         setcookie(
-            'usage',
+            'session_meta',
             $today . '|' . $usage,
             [
                 'expires'  => strtotime('tomorrow'),
@@ -138,4 +138,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
     </div>
 </body>
+
 </html>
