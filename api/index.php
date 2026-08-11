@@ -3,14 +3,14 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
-const DAILY_LIMIT = 5;
-$barcodeImage     = '';
-$barcode          = '';
-$displayText      = '';
-$size             = '';
-$color            = '';
-$error            = '';
-$remaining        = DAILY_LIMIT;
+$DAILY_LIMIT  = 20;
+$barcodeImage = '';
+$barcode      = '';
+$displayText  = '';
+$size         = '';
+$color        = '';
+$error        = '';
+$remaining    = $DAILY_LIMIT;
 
 $today = date('Y-m-d');
 
@@ -25,7 +25,7 @@ if (!empty($_COOKIE['barcode_usage'])) {
     }
 }
 
-$remaining = max(0, DAILY_LIMIT - $usage);
+$remaining = max(0, $DAILY_LIMIT - $usage);
 
 // Handle barcode generation
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Check daily limit
 
-    if ($usage >= DAILY_LIMIT) {
-        $error = 'You have reached your daily limit of 5 barcode prints.';
+    if ($usage >= $DAILY_LIMIT) {
+        $error = "You have reached your daily limit of " . $DAILY_LIMIT . " barcode prints.";
     } elseif ($barcode === '') {
         $error = 'Please enter a barcode value.';
     } else {
@@ -51,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         //Count successful barcode generation
         $usage++;
 
-        $remaining = max(0, DAILY_LIMIT - $usage);
+        $remaining = max(0, $DAILY_LIMIT - $usage);
 
         // Store today's usage in cookie. Cookie expires at midnight.
         setcookie(
-            'barcode_usage',
+            'usage',
             $today . '|' . $usage,
             [
                 'expires'  => strtotime('tomorrow'),
@@ -84,17 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2>Barcode Generator</h2>
 
         <!-- Daily limit -->
-        <div class="limit">
-            Daily barcode prints remaining:
-            <strong><?= $remaining ?></strong>/<?= DAILY_LIMIT ?>
-        </div>
-
+        <div class="limit">Daily barcode prints remaining:<strong><?= $remaining ?></strong>/<?= $DAILY_LIMIT ?></div>
 
         <!-- Error -->
         <?php if ($error): ?>
             <div class="error"> <?= htmlspecialchars($error) ?> </div>
         <?php endif; ?>
-
 
         <!-- Form -->
         <?php if ($remaining > 0): ?>
@@ -122,35 +117,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <button type="submit"> Generate Barcode </button>
             </form>
-
         <?php endif; ?>
-
 
         <!-- Generated barcode -->
         <?php if ($barcodeImage && $remaining > 0): ?>
             <div class="label-wrapper">
-
                 <div class="label">
-
                     <img src="data:image/png;base64,<?= $barcodeImage ?>" alt="Barcode">
-
                     <div class="middle"><?= htmlspecialchars($displayText) ?></div>
-
                     <div class="bottom">
                         <span> <?= htmlspecialchars($size) ?></span>
                         <span><?= htmlspecialchars($color) ?></span>
                     </div>
                 </div>
 
-
                 <div class="print" style="margin-top: 10px;">
                     <button onclick="window.print()">Print</button>
                 </div>
             </div>
         <?php endif; ?>
-
     </div>
-
 </body>
-
 </html>
