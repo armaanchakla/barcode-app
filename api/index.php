@@ -5,7 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
-const DAILY_LIMIT  = 20;
+const DAILY_LIMIT  = 100;
 $barcodeImage      = '';
 $barcode           = '';
 $displayText       = '';
