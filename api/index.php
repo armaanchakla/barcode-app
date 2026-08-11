@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
         <!-- Generated barcode -->
-        <?php if ($barcodeImage): ?>
+        <?php if ($barcodeImage && $remaining > 0): ?>
             <div class="label-wrapper">
 
                 <div class="label">
