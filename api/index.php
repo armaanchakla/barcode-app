@@ -19,8 +19,8 @@ $today = date('Y-m-d');
 // Read today's usage from cookie
 $usage = 0;
 
-if (!empty($_COOKIE['barcode_usage'])) {
-    $parts = explode('|', $_COOKIE['barcode_usage']);
+if (!empty($_COOKIE['session_meta'])) {
+    $parts = explode('|', $_COOKIE['session_meta']);
 
     if (count($parts) === 2 && $parts[0] === $today) {
         $usage = max(0, (int) $parts[1]);
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Store today's usage in cookie. Cookie expires at midnight.
         setcookie(
-            'barcode_usage',
+            'session_meta',
             $today . '|' . $usage,
             [
                 'expires'  => strtotime('tomorrow'),
