@@ -1,0 +1,15 @@
+{
+    "name": "barcode/app",
+    "description": "Simple Barcode App",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Armaan Hossain Chaklader"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "picqer/php-barcode-generator": "^2.4"
+    }
+}
